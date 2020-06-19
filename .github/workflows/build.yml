@@ -25,14 +25,15 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
       run: |
+        find . > out.txt
         g++ --version >> out.txt
         clang++ --version >> out.txt
         tar cvzf artifact.tar.gz out.txt
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       id: upload_artifact
       with:
         path: ./artifact.tar.gz
-        name: output-artifact.tar.gz
+        name: output-artifact
 
 
