@@ -25,10 +25,14 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: Run a multi-line script
       run: |
-        find .
-        find $RUNNER_TOOL_CACHE
-        find /usr/lib -name "cacert.pem"
-        gcc --version
-        g++ --version
-        clang --version
-        clang++ --version
+        g++ --version >> out.txt
+        clang++ --version >> out.txt
+        tar cvzf artifact.tar.gz out.txt
+
+    - uses: actions/upload-artifact@v1
+      id: upload_artifact
+      with:
+        path: ./artifact.tar.gz
+        name: output-artifact.tar.gz
+
+
