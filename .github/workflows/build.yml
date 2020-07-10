@@ -37,6 +37,7 @@ jobs:
             os: macos-latest
           }
 
+    steps:
     - name: Checkout plugin source
       id: source
       shell: cmake -P {0}
