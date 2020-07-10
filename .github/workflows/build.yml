@@ -101,7 +101,7 @@ jobs:
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/qt5/${qt_dir_prefix}" qt_dir)
         message("::set-output name=qt_dir::${qt_dir}")
 
-#        foreach(package qtbase qtdeclarative qttools qtsvg)
+        #foreach(package qtbase qtdeclarative qttools qtsvg)
         foreach(package qtbase)
           file(DOWNLOAD
             "${qt_base_url}/${qt_package_name}/${package_version}${package}${package_suffix}.7z" ./${package}.7z
@@ -152,7 +152,7 @@ jobs:
         elseif ("${{ runner.os }}" STREQUAL "Linux")
           set(qtc_output_directory "qtcreator/lib/qtcreator/plugins")
           set(qtc_binary_name "lib$ENV{PLUGIN_NAME}.so")
-#          set(qtc_platform "linux_x64")
+          #set(qtc_platform "linux_x64")
           set(qtc_platform "linux_gcc_64_rhel72")
         elseif ("${{ runner.os }}" STREQUAL "macOS")
           set(qtc_output_directory "qtcreator/bin/Qt Creator.app/Contents/PlugIns")
@@ -247,15 +247,15 @@ jobs:
           endif()
         endif()
 
-#    - name: Download Googletest
-#      id: googletest
-#      shell: cmake -P {0}
-#      run: |
-#        # Googletest should be a submodule
-#        file(DOWNLOAD "https://github.com/google/googletest/archive/release-$ENV{GOOGLETEST_VERSION}.tar.gz" ./googletest.tar.gz SHOW_PROGRESS)
-#        execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf googletest.tar.gz)
-#        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/googletest-release-$ENV{GOOGLETEST_VERSION}" googletest_dir)
-#        message("::set-output name=googletest_dir::${googletest_dir}")
+    #- name: Download Googletest
+    #  id: googletest
+    #  shell: cmake -P {0}
+    #  run: |
+    #    # Googletest should be a submodule
+    #    file(DOWNLOAD "https://github.com/google/googletest/archive/release-$ENV{GOOGLETEST_VERSION}.tar.gz" ./googletest.tar.gz SHOW_PROGRESS)
+    #    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf googletest.tar.gz)
+    #    file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/googletest-release-$ENV{GOOGLETEST_VERSION}" googletest_dir)
+    #    message("::set-output name=googletest_dir::${googletest_dir}")
 
     - name: Build
       shell: cmake -P {0}
