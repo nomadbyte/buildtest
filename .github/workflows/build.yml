@@ -55,6 +55,8 @@ jobs:
 
     - name: Download Qt
       id: qt
+      shell: cmake -P {0}
+      run: |
         set(qt_version $ENV{QT_VERSION})
 
         string(REPLACE "." "" qt_version_dotless "${qt_version}")
@@ -129,6 +131,8 @@ jobs:
 
     - name: Download Qt Creator
       id: qt_creator
+      shell: cmake -P {0}
+      run: |
         string(REGEX MATCH "([0-9]+.[0-9]+).[0-9]+" outvar "$ENV{QT_CREATOR_VERSION}")
 
         set(qtc_base_url "https://download.qt.io/official_releases/qtcreator/${CMAKE_MATCH_1}/$ENV{QT_CREATOR_VERSION}/installer_source")
@@ -183,6 +187,8 @@ jobs:
         endif()
 
     - name: Configure
+      shell: cmake -P {0}
+      run: |
         # restore the plugin's sources overwritten by unpacked qtcreator sources  
         execute_process(
           COMMAND git reset --hard
@@ -252,6 +258,8 @@ jobs:
 #        message("::set-output name=googletest_dir::${googletest_dir}")
 
     - name: Build
+      shell: cmake -P {0}
+      run: |
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(ENV{PATH} "${{ steps.qt.outputs.qt_dir }}/bin/;$ENV{PATH}")
         else()
