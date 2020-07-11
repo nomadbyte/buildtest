@@ -3,14 +3,15 @@ name: QMake Build Matrix
 on: [push]
 
 env:
-  QT_VERSION: 5.14.2
+  QT_VERSION: 5.12.8
   MSVC_VERSION: 2017
-  QT_CREATOR_VERSION: 4.12.2
+  QT_CREATOR_VERSION: 4.11.2
   QT_CREATOR_SNAPSHOT:
   PLUGIN_DIR: fossil
   PLUGIN_PRO: fossil.pro
   PLUGIN_NAME: Fossil
   PLUGIN_REPO: https://github.com/nomadbyte/qtcreator-plugin-fossil/
+  PLUGIN_VERSION: 4.11.2_1
 
 jobs:
   build:
@@ -43,8 +44,9 @@ jobs:
       id: source
       shell: cmake -P {0}
       run: |
+        set(version "$ENV{PLUGIN_VERSION}")
         execute_process(
-          COMMAND git clone
+          COMMAND git clone --branch ${version}
             "$ENV{PLUGIN_REPO}"
             qtcreator
           RESULT_VARIABLE result
