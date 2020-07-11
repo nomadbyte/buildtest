@@ -275,7 +275,7 @@ jobs:
 
         set(make_program make -j ${N})
         if ("${{ runner.os }}" STREQUAL "Windows")
-          set(make_program "jom/jom")
+          set(make_program "${{ steps.qt_creator.outputs.qtc_dir }}/bin/jom")
         endif()
 
         execute_process(
