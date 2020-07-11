@@ -148,6 +148,7 @@ jobs:
           set(msvc "msvc$ENV{MSVC_VERSION}")
           set(qtc_plugins_directory "lib/qtcreator/plugins")
           set(plugin_binary_name "$ENV{PLUGIN_NAME}4.dll")
+          set(qtc_docs_directory "share/doc/qtcreator")
           if ("${{ matrix.config.environment_script }}" MATCHES "vcvars64.bat")
             set(qtc_platform "windows_${msvc}_x64")
           elseif ("${{ matrix.config.environment_script }}" MATCHES "vcvars32.bat")
@@ -156,17 +157,20 @@ jobs:
         elseif ("${{ runner.os }}" STREQUAL "Linux")
           set(qtc_plugins_directory "lib/qtcreator/plugins")
           set(plugin_binary_name "lib$ENV{PLUGIN_NAME}.so")
+          set(qtc_docs_directory "share/doc/qtcreator")
           #set(qtc_platform "linux_x64")
           set(qtc_platform "linux_gcc_64_rhel72")
         elseif ("${{ runner.os }}" STREQUAL "macOS")
-          set(qtc_plugins_directory "bin/Qt Creator.app/Contents/PlugIns")
+          set(qtc_plugins_directory "Qt Creator.app/Contents/PlugIns")
           set(plugin_binary_name "lib$ENV{PLUGIN_NAME}.dylib")
+          set(qtc_docs_directory "Qt Creator.app/Contents/Resources/doc")
           set(qtc_platform "mac_x64")
         endif()
 
         # Save the path for other steps
         message("::set-output name=plugin_binary_name::${plugin_binary_name}")
         message("::set-output name=qtc_plugins_directory::${qtc_plugins_directory}")
+        message("::set-output name=qtc_docs_directory::${qtc_docss_directory}")
 
         file(MAKE_DIRECTORY qtcreator)
         # Save the path for other steps
@@ -281,7 +285,7 @@ jobs:
         endif()
 
         execute_process(
-          COMMAND ${make_program}
+          COMMAND ${make_program} all docs
           WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}/src/plugins/$ENV{PLUGIN_DIR}"
           RESULT_VARIABLE result
         )
@@ -296,6 +300,7 @@ jobs:
         execute_process(
           COMMAND ${CMAKE_COMMAND} -E tar cvf ${artifact_path} --format=zip
              "${{ steps.qt_creator.outputs.qtc_plugins_directory }}/${{ steps.qt_creator.outputs.plugin_binary_name }}"
+             "${{ steps.qt_creator.outputs.qtc_docs_directory }}/qtcreator.qch"
           WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}"
         )
         message("::set-output name=artifact_path::${artifact_path}")
