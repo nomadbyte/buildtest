@@ -285,7 +285,7 @@ jobs:
         endif()
 
         execute_process(
-          COMMAND ${make_program} all docs
+          COMMAND ${make_program}
           WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}/src/plugins/$ENV{PLUGIN_DIR}"
           RESULT_VARIABLE result
         )
@@ -293,14 +293,13 @@ jobs:
           message(FATAL_ERROR "Bad exit status")
         endif()
 
-
         set(artifact_name "$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${artifact_name}" artifact_path)
 
+        #     "${{ steps.qt_creator.outputs.qtc_docs_directory }}/qtcreator.qch"
         execute_process(
           COMMAND ${CMAKE_COMMAND} -E tar cvf ${artifact_path} --format=zip
              "${{ steps.qt_creator.outputs.qtc_plugins_directory }}/${{ steps.qt_creator.outputs.plugin_binary_name }}"
-             "${{ steps.qt_creator.outputs.qtc_docs_directory }}/qtcreator.qch"
           WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}"
         )
         message("::set-output name=artifact_path::${artifact_path}")
