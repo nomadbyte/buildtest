@@ -144,7 +144,7 @@ jobs:
         endif()
 
         if ("${{ runner.os }}" STREQUAL "Windows")
-          set(msvc "msvc$ENV{MSVC_VERSION})
+          set(msvc "msvc$ENV{MSVC_VERSION}")
           set(qtc_output_directory "qtcreator/lib/qtcreator/plugins")
           set(qtc_binary_name "$ENV{PLUGIN_NAME}4.dll")
           if ("${{ matrix.config.environment_script }}" MATCHES "vcvars64.bat")
