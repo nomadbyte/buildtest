@@ -368,8 +368,8 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${{ steps.build.outputs.artifact_name }}
-        path: ${{ steps.build.outputs.artifact_path }}
+        name: ${{ build.steps.build.outputs.artifact_name }}
+        path: ./
 
     - name: Download URL
       uses: actions/download-artifact@v1
@@ -388,6 +388,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
-        asset_path: ${{ steps.build.outputs.artifact_path }}
-        asset_name: ${{ steps.build.outputs.artifact_name }}
+        asset_path: ${{ build.steps.build.outputs.artifact_path }}
+        asset_name: ${{ build.steps.build.outputs.artifact_name }}
         asset_content_type: application/zip
