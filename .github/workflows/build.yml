@@ -21,12 +21,12 @@ jobs:
         config:
         - {
             name: "Windows Latest x64", artifact: "Windows-x64.zip",
-            os: windows-latest,
+            os: windows-2016,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest x86", artifact: "Windows-x86.zip",
-            os: windows-latest,
+            os: windows-2016,
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
           }
         - {
