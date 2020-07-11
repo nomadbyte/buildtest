@@ -293,7 +293,7 @@ jobs:
           message(FATAL_ERROR "Bad exit status")
         endif()
 
-        set(artifact_name "$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}")
+        set(artifact_name "QtCreator-$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}")
         file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${artifact_name}" artifact_path)
 
         #     "${{ steps.qt_creator.outputs.qtc_docs_directory }}/qtcreator.qch"
@@ -372,7 +372,7 @@ jobs:
     - name: Download artifact
       uses: actions/download-artifact@v1
       with:
-        name: ${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
+        name: QtCreator-${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
         path: ./
 
     - name: Download URL
@@ -392,6 +392,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.set_upload_url.outputs.upload_url }}
-        asset_path: ./${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
-        asset_name: ${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
+        asset_path: ./QtCreator-${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
+        asset_name: QtCreator-${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
         asset_content_type: application/zip
