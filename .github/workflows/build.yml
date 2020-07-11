@@ -22,12 +22,12 @@ jobs:
         - {
             name: "Windows Latest x64", artifact: "Windows-x64.zip",
             os: windows-2016,
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/$MSVC_VERSION/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           }
         - {
             name: "Windows Latest x86", artifact: "Windows-x86.zip",
             os: windows-2016,
-            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/$MSVC_VERSION/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
           }
         - {
             name: "Linux Latest x64", artifact: "Linux-x64.zip",
@@ -143,29 +143,30 @@ jobs:
           set(qtc_base_url "https://download.qt.io/snapshots/qtcreator/${CMAKE_MATCH_1}/$ENV{QT_CREATOR_VERSION}/installer_source/${qtc_snapshot}")
         endif()
 
+
         if ("${{ runner.os }}" STREQUAL "Windows")
           set(msvc "msvc$ENV{MSVC_VERSION}")
-          set(qtc_output_directory "qtcreator/lib/qtcreator/plugins")
-          set(qtc_binary_name "$ENV{PLUGIN_NAME}4.dll")
+          set(qtc_plugins_directory "lib/qtcreator/plugins")
+          set(plugin_binary_name "$ENV{PLUGIN_NAME}4.dll")
           if ("${{ matrix.config.environment_script }}" MATCHES "vcvars64.bat")
             set(qtc_platform "windows_${msvc}_x64")
           elseif ("${{ matrix.config.environment_script }}" MATCHES "vcvars32.bat")
             set(qtc_platform "windows_${msvc}_x86")
           endif()
         elseif ("${{ runner.os }}" STREQUAL "Linux")
-          set(qtc_output_directory "qtcreator/lib/qtcreator/plugins")
-          set(qtc_binary_name "lib$ENV{PLUGIN_NAME}.so")
+          set(qtc_plugins_directory "lib/qtcreator/plugins")
+          set(plugin_binary_name "lib$ENV{PLUGIN_NAME}.so")
           #set(qtc_platform "linux_x64")
           set(qtc_platform "linux_gcc_64_rhel72")
         elseif ("${{ runner.os }}" STREQUAL "macOS")
-          set(qtc_output_directory "qtcreator/bin/Qt Creator.app/Contents/PlugIns")
-          set(qtc_binary_name "lib$ENV{PLUGIN_NAME}.dylib")
+          set(qtc_plugins_directory "bin/Qt Creator.app/Contents/PlugIns")
+          set(plugin_binary_name "lib$ENV{PLUGIN_NAME}.dylib")
           set(qtc_platform "mac_x64")
         endif()
 
         # Save the path for other steps
-        message("::set-output name=qtc_binary_name::${qtc_binary_name}")
-        message("::set-output name=qtc_output_directory::${qtc_output_directory}")
+        message("::set-output name=plugin_binary_name::${plugin_binary_name}")
+        message("::set-output name=qtc_plugins_directory::${qtc_plugins_directory}")
 
         file(MAKE_DIRECTORY qtcreator)
         # Save the path for other steps
@@ -177,15 +178,15 @@ jobs:
           file(DOWNLOAD
             "${qtc_base_url}/${qtc_platform}/${package}.7z" ./${package}.7z SHOW_PROGRESS)
           execute_process(COMMAND
-            ${CMAKE_COMMAND} -E tar xvf ../${package}.7z WORKING_DIRECTORY qtcreator)
+            ${CMAKE_COMMAND} -E tar xvf ../${package}.7z WORKING_DIRECTORY ${qtc_dir})
         endforeach()
 
         if ("${{ runner.os }}" STREQUAL "macOS")
           execute_process(
-            COMMAND ${CMAKE_COMMAND} -E make_directory qtcreator/bin
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${qtc_dir}/bin
             COMMAND ${CMAKE_COMMAND} -E create_symlink
-              "$ENV{GITHUB_WORKSPACE}/qtcreator/Qt Creator.app"
-              "$ENV{GITHUB_WORKSPACE}/qtcreator/bin/Qt Creator.app"
+              "${qtc_dir}/Qt Creator.app"
+              "${qtc_dir}/bin/Qt Creator.app"
           )
         endif()
 
@@ -218,15 +219,15 @@ jobs:
           endforeach()
         endif()
 
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/qtcreator" qtcreator_dir)
+        file(TO_CMAKE_PATH "${{ steps.qt_creator.outputs.qtc_dir }}" qtc_dir)
 
         execute_process(
           COMMAND ${{ steps.qt.outputs.qt_dir }}/bin/qmake
             $ENV{PLUGIN_PRO}
             CONFIG+=release
-            IDE_SOURCE_TREE="${qtcreator_dir}"
-            IDE_BUILD_TREE="${qtcreator_dir}"
-          WORKING_DIRECTORY "${qtcreator_dir}/src/plugins/$ENV{PLUGIN_DIR}"
+            IDE_SOURCE_TREE="${qtc_dir}"
+            IDE_BUILD_TREE="${qtc_dir}"
+          WORKING_DIRECTORY "${qtc_dir}/src/plugins/$ENV{PLUGIN_DIR}"
           RESULT_VARIABLE result
         )
         if (NOT result EQUAL 0)
@@ -261,6 +262,7 @@ jobs:
     #    message("::set-output name=googletest_dir::${googletest_dir}")
 
     - name: Build
+      id: build
       shell: cmake -P {0}
       run: |
         if ("${{ runner.os }}" STREQUAL "Windows")
@@ -288,17 +290,19 @@ jobs:
         endif()
 
 
-        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}" artifact)
+        file(TO_CMAKE_PATH "$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}" artifact)
 
         execute_process(COMMAND
-          ${CMAKE_COMMAND} -E tar cvf ${artifact} --format=zip "${{ steps.qt_creator.outputs.qtc_binary_name }}"
-          WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_output_directory }}"
+          ${CMAKE_COMMAND} -E tar cvf ${artifact} --format=zip
+             "${{ steps.qt_creator.outputs.qtc_plugins_directory }/${{ steps.qt_creator.outputs.plugin_binary_name }}"
+          WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}}"
         )
+        message("::set-output name=artifact::${artifact}")
 
 
     - name: Upload
       uses: actions/upload-artifact@v1
       id: upload_artifact
       with:
-        path: ./${{ env.PLUGIN_NAME }}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
-        name: ${{ env.PLUGIN_NAME}}-${{ env.QT_CREATOR_VERSION }}-${{ matrix.config.artifact }}
+        path: ${{ steps.build.outputs.artifact }}
+        name: ${{ steps.build.outputs.artifact }}
