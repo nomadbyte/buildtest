@@ -290,19 +290,21 @@ jobs:
         endif()
 
 
-        file(TO_CMAKE_PATH "$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}" artifact)
+        set(artifact_name "$ENV{PLUGIN_NAME}-$ENV{QT_CREATOR_VERSION}-${{ matrix.config.artifact }}")
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${artifact_name}" artifact_path)
 
-        execute_process(COMMAND
-          ${CMAKE_COMMAND} -E tar cvf ${artifact} --format=zip
-             --directory "${{ steps.qt_creator.outputs.qtc_dir }}"
+        execute_process(
+          COMMAND ${CMAKE_COMMAND} -E tar cvf ${artifact_path} --format=zip
              "${{ steps.qt_creator.outputs.qtc_plugins_directory }}/${{ steps.qt_creator.outputs.plugin_binary_name }}"
+          WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}"
         )
-        message("::set-output name=artifact::${artifact}")
+        message("::set-output name=artifact_path::${artifact_path}")
+        message("::set-output name=artifact_name::${artifact_name}")
 
 
     - name: Upload
       uses: actions/upload-artifact@v1
       id: upload_artifact
       with:
-        path: ${{ steps.build.outputs.artifact }}
-        name: ${{ steps.build.outputs.artifact }}
+        path: ${{ steps.build.outputs.artifact_path }}
+        name: ${{ steps.build.outputs.artifact_name }}
