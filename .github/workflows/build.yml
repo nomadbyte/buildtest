@@ -294,7 +294,7 @@ jobs:
 
         execute_process(COMMAND
           ${CMAKE_COMMAND} -E tar cvf ${artifact} --format=zip
-             "${{ steps.qt_creator.outputs.qtc_plugins_directory }/${{ steps.qt_creator.outputs.plugin_binary_name }}"
+             "${{ steps.qt_creator.outputs.qtc_plugins_directory }}/${{ steps.qt_creator.outputs.plugin_binary_name }}"
           WORKING_DIRECTORY "${{ steps.qt_creator.outputs.qtc_dir }}}"
         )
         message("::set-output name=artifact::${artifact}")
