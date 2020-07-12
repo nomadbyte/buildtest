@@ -3,7 +3,7 @@ name: QMake Build Matrix
 on: [push]
 
 env:
-  QT_VERSION: 5.12.8
+  QT_VERSION: 5.12.9
   MSVC_VERSION: 2017
   QT_CREATOR_VERSION: 4.11.2
   QT_CREATOR_SNAPSHOT:
@@ -44,9 +44,14 @@ jobs:
       id: source
       shell: cmake -P {0}
       run: |
-        set(tag "v$ENV{PLUGIN_VERSION}")
+        set(branch "develop")
+        set(version  "$ENV{PLUGIN_VERSION}")
+        if (version)
+          set(branch "v${version}")
+        endif()
+
         execute_process(
-          COMMAND git clone --branch ${tag}
+          COMMAND git clone --branch "${branch}"
             "$ENV{PLUGIN_REPO}"
             qtcreator
           RESULT_VARIABLE result
