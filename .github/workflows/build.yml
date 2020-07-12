@@ -3,7 +3,7 @@ name: QMake Build Matrix
 on: [push]
 
 env:
-  QT_VERSION: 5.14.1
+  QT_VERSION: 5.14.2
   MSVC_VERSION: 2017
   QT_CREATOR_VERSION: 4.11.2
   QT_CREATOR_SNAPSHOT:
