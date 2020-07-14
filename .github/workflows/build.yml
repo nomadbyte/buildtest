@@ -11,7 +11,7 @@ env:
   PLUGIN_PRO: fossil.pro
   PLUGIN_NAME: Fossil
   PLUGIN_REPO: https://github.com/nomadbyte/qtcreator-plugin-fossil/
-  PLUGIN_VERSION: 4.12.1_2
+  PLUGIN_VERSION: develop
 
 jobs:
   build:
