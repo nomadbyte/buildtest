@@ -1,0 +1,124 @@
+name: Test Build
+
+on: [push]
+
+env:
+  SOURCE: source.c
+  BINARY: target
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+        - {
+            name: "Windows Latest x64", artifact: "Windows-msvc2019-x64",
+            os: windows-2019,
+            environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+          }
+        #- {
+        #    name: "Windows Latest x86", artifact: "Windows-msvc2019-x86",
+        #    os: windows-2016,
+        #    environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
+        #  }
+        #- {
+        #    name: "Windows 2016 x64", artifact: "Windows-msvc2017-x64",
+        #    os: windows-2016,
+        #    environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
+        #  }
+        #- {
+        #    name: "Windows 2016 x86", artifact: "Windows-msvc2017-x86",
+        #    os: windows-2016,
+        #    environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Auxiliary/Build/vcvars32.bat"
+        #  }
+        - {
+            name: "Linux Latest x64", artifact: "Linux-x64",
+            os: ubuntu-latest
+          }
+        #- {
+        #    name: "macOS Latest x64", artifact: "macOS-x64.zip",
+        #    os: macos-latest
+        #  }
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Build
+      id: build
+      shell: cmake -P {0}
+      run: |
+        if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
+          execute_process(
+            COMMAND "${{ matrix.config.environment_script }}" && set
+            OUTPUT_FILE environment_script_output.txt
+          )
+          file(STRINGS environment_script_output.txt output_lines)
+          foreach(line IN LISTS output_lines)
+            if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
+              set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
+            endif()
+          endforeach()
+        endif()
+
+        set(binary_path "./$ENV{BINARY}")
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          set(binary_path "./$ENV{BINARY}.exe")
+        endif()
+
+        if ("${{ runner.os }}" STREQUAL "Windows")
+          execute_process(
+            COMMAND cl /Fe${binary_path} $ENV{SOURCE}
+            WORKING_DIRECTORY "$ENV{GITHUB_WORKSPACE}"
+            RESULT_VARIABLE result
+          )
+        else()
+          execute_process(
+            COMMAND gcc -o${binary_path} $ENV{SOURCE} -lm
+            WORKING_DIRECTORY "$ENV{GITHUB_WORKSPACE}"
+            RESULT_VARIABLE result
+          )
+        endif()
+
+        if (NOT result EQUAL 0)
+          message(FATAL_ERROR "Build command failed: ${result}")
+        endif()
+
+        message("::set-output name=binary_path::${binary_path}")
+
+
+    - name: Run test
+      id: test
+      shell: cmake -P {0}
+      run: |
+        execute_process(
+          COMMAND ${{ steps.build.outputs.binary_path }}
+          WORKING_DIRECTORY "$ENV{GITHUB_WORKSPACE}"
+          RESULT_VARIABLE result
+          COMMAND_ECHO STDOUT
+          OUTPUT_VARIABLE output
+          ERROR_VARIABLE output
+          ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+        )
+
+        file(WRITE "output.txt" "${output}")
+        set(artifact_name "${{ matrix.config.artifact }}")
+        file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/output.txt" artifact_path)
+
+        #execute_process(
+        #  COMMAND ${CMAKE_COMMAND} -E tar cvf ${artifact_path} --format=zip
+        #     "output.txt"
+        #  WORKING_DIRECTORY "$ENV{GITHUB_WORKSPACE}"
+        #)
+        message("::set-output name=artifact_path::${artifact_path}")
+        message("::set-output name=artifact_name::${artifact_name}")
+
+
+    - name: Upload
+      uses: actions/upload-artifact@v1
+      id: upload_artifact
+      with:
+        path: ${{ steps.test.outputs.artifact_path }}
+        name: ${{ steps.test.outputs.artifact_name }}
